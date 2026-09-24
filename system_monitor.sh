@@ -54,6 +54,7 @@ echo "Total CPU usage: ${total_cpu}%"
 
 read -rp "Terminate them all? (y/N)" action
 
+
 case "$action" in
 	Y|y|yes)
 		echo "Terminate all user processes"
@@ -93,7 +94,13 @@ case "$action" in
 
 esac
 
-read -rp "Enter PID to act on (or press Enter to exit): "  hold
+read -rp "Enter PID to act on (or press Enter to exit): "  pid
+
+# Check if PID is still running
+if ! kill -0 "$pid" 2>/dev/null; then
+    echo "PID $hold is not running."
+    exit 0
+fi
 
 read -rp "Choose an action -- [t]erminate, [n]renice: " act
 
@@ -101,7 +108,7 @@ case "$act" in
 
 	t|T|terminate)
 		echo "Terminating"
-		while read -r pid cpu mem command; do
+		
 
     			if kill -TERM "$pid" 2>/dev/null; then
 
@@ -109,7 +116,7 @@ case "$act" in
         			sleep 3
 
         			if ps -p "$pid" > /dev/null; then
-            				kill -TERM "$hold"
+            				kill -TERM "$pid"
             				echo "Process $pid did not stop -- sent SIGKILL."
       	 			else
             				echo "Process $pid stopped gracefully."
@@ -119,7 +126,7 @@ case "$act" in
         			echo "Process $pid could not be terminated -- permission denied."
     			fi
 
-		done <<< "$top_cpu"
+		
 	;;
 
 	n|N|nrenice)
